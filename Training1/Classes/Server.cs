@@ -11,50 +11,64 @@ namespace Training1.Classes
 {
     public class Server
     {
-        private Socket serverSocket;
-        List<ClientHandler> clients = new List<ClientHandler>();
-        Thread acceptingThread;
+        private Socket serverSocket; //socket of server
+        List<ClientHandler> clients = new List<ClientHandler>(); // list of clienthanders, each client has an own clienthandler
+        Action<String> GuiUpdater; //delegate to function in mainVM to update server gui (e.g. if new incoming msg from client)
+        Thread acceptingThread; //each client is accepted in an own thread
 
-        public Server()
+        public Server(string ip, int port, Action<string> guiUpdater)
         {
-            //todo add params to constr
-            serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            serverSocket.Bind(new IPEndPoint(IPAddress.Loopback, 8055));
-            serverSocket.Listen(10);           
+            this.GuiUpdater = guiUpdater; //the parameter delegate points to the function in the mainVM
+            serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp); //create serversocket
+            serverSocket.Bind(new IPEndPoint(IPAddress.Parse(ip), port)); //bind serversocket to NIC
+            serverSocket.Listen(10); //server start listening (max. allowed clients = 10)
         }
 
         private void StartAccepting()
         {
             //accept clients in thread
-            acceptingThread = new Thread(new ThreadStart(Accept));
-            acceptingThread.IsBackground = true;
-            acceptingThread.Start();
+            acceptingThread = new Thread(new ThreadStart(Accept)); //for each new client create thread
+            acceptingThread.IsBackground = true; //run thread in background
+            acceptingThread.Start(); //start this thread
         }
 
         private void Accept()
         {
-            while (acceptingThread.IsAlive)
+            while (acceptingThread.IsAlive) //as long as the accepting thread is alive accept new clients
             {
                 try
                 {
-                    clients.Add(new ClientHandler(serverSocket.Accept()));
+                    clients.Add(new ClientHandler(serverSocket.Accept())); //create new clienthandler for new client and add it to the list
                 }catch (Exception)
                 {
-
+                    //server not open
                 }
             }
         }
 
         public void StopAccepting()
         {
-            serverSocket.Close();
-            acceptingThread.Abort();
+            serverSocket.Close(); //close serversocket
+            acceptingThread.Abort(); //abort the accepting thread
 
-            foreach(var client in clients)
+            foreach(var client in clients) //for each clienthandler (= client) disconnect the client from the server
             {
-                client.Close();
+                client.Close(); //disconnect one client via: clienthandler.close
             }
-            clients.Clear();
+            clients.Clear(); //empty list of clienthandler
+        }
+
+        private void BroadcastToggle(string button, string state)
+        {
+            string update = button + ":" + state; //create vlaue pair "button:state" e.g. "1:red"
+
+            GuiUpdater(update); //points to a function in the mainVM to update the server GUI with the info in the form of a value pair "button:state"
+
+            foreach (var client in clients) //broadcast button id and new state to each client in the form of a value pair "button:state"
+            {
+                client.Send(update);
+            }
+
         }
     }
 }

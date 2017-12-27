@@ -71,6 +71,7 @@
     </ApplicationDefinition>
     <Compile Include="Classes\Client.cs" />
     <Compile Include="Classes\ClientHandler.cs" />
+    <Compile Include="Classes\Entry.cs" />
     <Compile Include="Classes\Server.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />
     <Compile Include="ViewModel\ViewModelLocator.cs" />

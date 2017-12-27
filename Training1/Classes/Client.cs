@@ -14,12 +14,13 @@ namespace Training1.Classes
         Socket clientSocket;
         byte[] buffer = new byte[512];
         Thread clientReceivingThread;
-        Action<string> MessageInformer;
+        Action<string> GuiUpdater;
 
-        public Client()
+        public Client(string ip, int port, Action<string> guiUpdater)
         {
+            this.GuiUpdater = guiUpdater;
             TcpClient client = new TcpClient();
-            client.Connect(IPAddress.Loopback, 8055);
+            client.Connect(IPAddress.Parse(ip), port);
             clientSocket = client.Client;
             StartReceiving();
         }
@@ -33,11 +34,11 @@ namespace Training1.Classes
 
         private void Receive()
         {
-            string message = "";
+            string update = "";
             while (clientReceivingThread.IsAlive)
             {
-                message = Encoding.UTF8.GetString(buffer, 0 , clientSocket.Receive(buffer));
-                MessageInformer(message);
+                update = Encoding.UTF8.GetString(buffer, 0 , clientSocket.Receive(buffer));
+                GuiUpdater(update);
             }
             Close();
         }
