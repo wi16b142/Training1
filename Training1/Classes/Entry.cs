@@ -11,6 +11,12 @@ namespace Training1.Classes
         private string button;
         private string state;
 
+        public Entry(string button, string state)
+        {
+            this.button = button;
+            this.state = state;
+        }
+
         public string State
         {
             get { return state; }

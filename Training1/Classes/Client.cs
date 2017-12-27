@@ -11,10 +11,10 @@ namespace Training1.Classes
 {
     class Client
     {
-        Socket clientSocket;
-        byte[] buffer = new byte[512];
-        Thread clientReceivingThread;
-        Action<string> GuiUpdater;
+        private Socket clientSocket;
+        private byte[] buffer = new byte[512];
+        private Thread clientReceivingThread;
+        private Action<string> GuiUpdater;
 
         public Client(string ip, int port, Action<string> guiUpdater)
         {
@@ -40,17 +40,17 @@ namespace Training1.Classes
                 update = Encoding.UTF8.GetString(buffer, 0 , clientSocket.Receive(buffer));
                 GuiUpdater(update);
             }
-            Close();
         }
 
-        public void StopReceiving()
+        private void StopReceiving()
         {
             clientReceivingThread.Abort();
         }
 
-        private void Close()
+        public void Close()
         {
             clientSocket.Close();
+            StopReceiving();
         }
     }
 }

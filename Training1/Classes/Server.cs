@@ -9,12 +9,12 @@ using System.Threading;
 
 namespace Training1.Classes
 {
-    public class Server
+    class Server
     {
         private Socket serverSocket; //socket of server
-        List<ClientHandler> clients = new List<ClientHandler>(); // list of clienthanders, each client has an own clienthandler
-        Action<String> GuiUpdater; //delegate to function in mainVM to update server gui (e.g. if new incoming msg from client)
-        Thread acceptingThread; //each client is accepted in an own thread
+        private List<ClientHandler> clients = new List<ClientHandler>(); // list of clienthanders, each client has an own clienthandler
+        private Action<String> GuiUpdater; //delegate to function in mainVM to update server gui (e.g. if new incoming msg from client)
+        private Thread acceptingThread; //each client is accepted in an own thread
 
         public Server(string ip, int port, Action<string> guiUpdater)
         {
@@ -46,9 +46,8 @@ namespace Training1.Classes
             }
         }
 
-        public void StopAccepting()
+        private void StopAccepting()
         {
-            serverSocket.Close(); //close serversocket
             acceptingThread.Abort(); //abort the accepting thread
 
             foreach(var client in clients) //for each clienthandler (= client) disconnect the client from the server
@@ -58,7 +57,13 @@ namespace Training1.Classes
             clients.Clear(); //empty list of clienthandler
         }
 
-        private void BroadcastToggle(string button, string state)
+        public void Close()
+        {
+            serverSocket.Close(); //close serversocket
+            StopAccepting();
+        }
+
+        public void BroadcastToggle(string button, string state)
         {
             string update = button + ":" + state; //create vlaue pair "button:state" e.g. "1:red"
 

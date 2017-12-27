@@ -20,24 +20,29 @@
         <StackPanel>
             <TabPanel Margin="40,40,0,0">
                 <Button Content="Toggle" Command="{Binding Toggle1BtnClickCmd}" Width="70" Height="20"/>
-                <Ellipse Height="20" Width="20" Stroke="Black" Margin="4.6,0,-4.6,0"/>  
+                <Ellipse Height="20" Width="20" Fill="{Binding Toggle1Brush}" Stroke="Black" Margin="4.6,0,-4.6,0"/>  
             </TabPanel>
             <TabPanel Margin="40,10,0,0">
                 <Button Content="Toggle" Command="{Binding Toggle2BtnClickCmd}" Width="70" Height="20"/>
-                <Ellipse Height="20" Width="20" Stroke="Black" Margin="4.6,0,-4.6,0"/>
+                <Ellipse Height="20" Width="20" Fill="{Binding Toggle2Brush}" Stroke="Black" Margin="4.6,0,-4.6,0"/>
             </TabPanel>
             <TabPanel Margin="40,10,0,0">
                 <Button Content="Toggle" Command="{Binding Toggle3BtnClickCmd}" Width="70" Height="20"/>
-                <Ellipse Height="20" Width="20" Stroke="Black" Margin="4.6,0,-4.6,0"/>
+                <Ellipse Height="20" Width="20" Fill="{Binding Toggle3Brush}" Stroke="Black" Margin="4.6,0,-4.6,0"/>
             </TabPanel>
             <TabPanel Margin="40,10,0,0">
                 <Button Content="Toggle" Command="{Binding Toggle4BtnClickCmd}" Width="70" Height="20"/>
-                <Ellipse Height="20" Width="20" Stroke="Black" Margin="4.6,0,-4.6,0"/>
+                <Ellipse Height="20" Width="20" Fill="{Binding Toggle4Brush}" Stroke="Black" Margin="4.6,0,-4.6,0"/>
             </TabPanel>
         </StackPanel>
 
         <Label Content="History" Grid.Row="0" Grid.Column="1" Margin="10,15"/>
-        <DataGrid Margin="10,40,10,10" Grid.Column="1" Grid.Row="0" HeadersVisibility="None"/>
+        <DataGrid ItemsSource="{Binding History}" Margin="10,40,10,10" Grid.Column="1" Grid.Row="0" AutoGenerateColumns="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Binding="{Binding Button}" Header="Button ID"/>
+                <DataGridTextColumn Binding="{Binding State}" Header="State"/>
+            </DataGrid.Columns>
+        </DataGrid>
 
 
         <Button Grid.Column="1" Grid.Row="1" Content="Listen" Command="{Binding ListenBtnClickCmd}" Width="55" Height="20" HorizontalAlignment="Right" Margin="0,0,30,0"/>
