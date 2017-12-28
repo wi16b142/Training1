@@ -39,6 +39,7 @@ namespace Training1.Classes
                 try
                 {
                     clients.Add(new ClientHandler(serverSocket.Accept())); //create new clienthandler for new client and add it to the list
+                    GuiUpdater("client added");
                 }catch (Exception)
                 {
                     //server not open
@@ -59,6 +60,10 @@ namespace Training1.Classes
 
         public void Close()
         {
+            foreach (var client in clients) //disconnect all clients
+            {
+                client.Send("@quit");
+            }    
             serverSocket.Close(); //close serversocket
             StopAccepting();
         }

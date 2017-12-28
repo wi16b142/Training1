@@ -27,30 +27,28 @@ namespace Training1.Classes
 
         private void StartReceiving()
         {
+            Task.Factory.StartNew(Receive);
+            /*
             clientReceivingThread = new Thread(new ThreadStart(Receive));
             clientReceivingThread.IsBackground = true;
             clientReceivingThread.Start();
+            */
         }
 
         private void Receive()
         {
             string update = "";
-            while (clientReceivingThread.IsAlive)
+            while (!update.Equals("@quit"))
             {
                 update = Encoding.UTF8.GetString(buffer, 0 , clientSocket.Receive(buffer));
                 GuiUpdater(update);
             }
-        }
-
-        private void StopReceiving()
-        {
-            clientReceivingThread.Abort();
+            Close();
         }
 
         public void Close()
         {
             clientSocket.Close();
-            StopReceiving();
         }
     }
 }

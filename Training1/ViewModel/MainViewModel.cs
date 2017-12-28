@@ -59,8 +59,10 @@ namespace Training1.ViewModel
             CloseBtnClickCmd = new RelayCommand(
                 () =>
                 {
+                    isConnected = false;
                     if (isServer)
                     {
+                        isServer = false;
                         server.Close();
                         History.Add(new Entry("Server Closed", ""));
                     }
@@ -147,8 +149,7 @@ namespace Training1.ViewModel
                     updateBrush = InvertBrush(Toggle4Brush);
                     break;
             }
-            
-            History.Add(new Entry(updateID, updateBrush));
+            server.BroadcastToggle(updateID, updateBrush);
         }
 
         private string InvertBrush(SolidColorBrush brush)
