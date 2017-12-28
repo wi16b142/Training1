@@ -2,6 +2,7 @@ using GalaSoft.MvvmLight;
 using GalaSoft.MvvmLight.CommandWpf;
 using System;
 using System.Collections.ObjectModel;
+using System.Windows;
 using System.Windows.Media;
 using Training1.Classes;
 
@@ -22,6 +23,7 @@ namespace Training1.ViewModel
         public RelayCommand ConnectBtnClickCmd { get; set; }
         public RelayCommand CloseBtnClickCmd { get; set; }
         public ObservableCollection<Entry> History { get; set; }
+        public ObservableCollection<SolidColorBrush> Brush { get; set; }
         private Server server;
         private Client client;
         private bool isConnected = false;
@@ -36,11 +38,16 @@ namespace Training1.ViewModel
             //depending on button clicked, start app as client or server and configure gui accordingly
             //instantiate brushes for the toggle states and the observable for the history entries
             #region startup
+            History = new ObservableCollection<Entry>();
+            Brush = new ObservableCollection<SolidColorBrush>();
             Toggle1Brush = new SolidColorBrush(Colors.Red);
             Toggle2Brush = new SolidColorBrush(Colors.Red);
             Toggle3Brush = new SolidColorBrush(Colors.Red);
             Toggle4Brush = new SolidColorBrush(Colors.Red);
-            History = new ObservableCollection<Entry>();
+            Brush.Add(Toggle1Brush);
+            Brush.Add(Toggle2Brush);
+            Brush.Add(Toggle3Brush);
+            Brush.Add(Toggle4Brush);
 
             ListenBtnClickCmd = new RelayCommand( 
                 () => 
@@ -64,13 +71,12 @@ namespace Training1.ViewModel
                     {
                         isServer = false;
                         server.Close();
-                        History.Add(new Entry("Server Closed", ""));
                     }
                     else
                     {
                         client.Close();
-                        History.Add(new Entry("Client Closed", ""));
                     }
+                    CloseWindow();
                 },
                 () => { return isConnected; });
             #endregion
@@ -115,14 +121,22 @@ namespace Training1.ViewModel
             isConnected = true;
             isServer = true;
             server = new Server(ip, port, UpdateGUI);
-
         }
 
         private void StartUpAsClient()
-        {
+        {        
+            client = new Client(ip, port, UpdateGUI, AbortInfo);
             isConnected = true;
-            client = new Client(ip, port, UpdateGUI);
+        }
 
+        private void AbortInfo()
+        {
+            CloseWindow();
+        }
+
+        private void CloseWindow()
+        {
+            Application.Current.Shutdown();
         }
 
         private void Toggle(string id)
@@ -133,19 +147,19 @@ namespace Training1.ViewModel
             switch (id)
             {
                 case "1":
-                    updateID = "Button1";
+                    updateID = "1";
                     updateBrush = InvertBrush(Toggle1Brush);
                     break;
                 case "2":
-                    updateID = "Button2";
+                    updateID = "2";
                     updateBrush = InvertBrush(Toggle2Brush);
                     break;
                 case "3":
-                    updateID = "Button3";
+                    updateID = "3";
                     updateBrush = InvertBrush(Toggle3Brush);
                     break;
                 case "4":
-                    updateID = "Button4";
+                    updateID = "4";
                     updateBrush = InvertBrush(Toggle4Brush);
                     break;
             }
@@ -154,23 +168,30 @@ namespace Training1.ViewModel
 
         private string InvertBrush(SolidColorBrush brush)
         {
-            string brushToReadable = "red";
+            string brushToReadable = "Red";
 
-            if (brush.Color == Colors.Red)
-            {
-                brush.Color = Colors.Green;
-                brushToReadable = "green";
-            }
-            else brush.Color = Colors.Red;
-
+            if (brush.Color == Colors.Red) brushToReadable = "Green";
             return brushToReadable;
         }
 
         private void UpdateGUI(string update)
         {
-            string button = update.Split(':')[0];
-            string state = update.Split(':')[1];
-            History.Add(new Entry(button, state));
+            App.Current.Dispatcher.Invoke(() =>
+            {
+                if (update.Contains(":"))
+                {
+                    string ID = update.Split(':')[0];
+                    int buttonID = Int32.Parse(ID)-1;
+                    string button = "Button" + ID;
+                    string state = update.Split(':')[1];
+                    System.Drawing.Color tempColor = System.Drawing.Color.FromName(state);
+                    Color stateColor = Color.FromArgb(tempColor.A, tempColor.R, tempColor.G, tempColor.B);
+                    Brush[buttonID].Color = stateColor;
+                    History.Add(new Entry(button, state));
+                }
+                
+            });
+
         }
     }
 }

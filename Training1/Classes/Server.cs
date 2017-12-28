@@ -22,9 +22,10 @@ namespace Training1.Classes
             serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp); //create serversocket
             serverSocket.Bind(new IPEndPoint(IPAddress.Parse(ip), port)); //bind serversocket to NIC
             serverSocket.Listen(10); //server start listening (max. allowed clients = 10)
+            StartAccepting();
         }
 
-        private void StartAccepting()
+        public void StartAccepting()
         {
             //accept clients in thread
             acceptingThread = new Thread(new ThreadStart(Accept)); //for each new client create thread
@@ -39,7 +40,7 @@ namespace Training1.Classes
                 try
                 {
                     clients.Add(new ClientHandler(serverSocket.Accept())); //create new clienthandler for new client and add it to the list
-                    GuiUpdater("client added");
+                    
                 }catch (Exception)
                 {
                     //server not open
@@ -47,25 +48,16 @@ namespace Training1.Classes
             }
         }
 
-        private void StopAccepting()
+        public void Close()
         {
+            serverSocket.Close(); //close serversocket
             acceptingThread.Abort(); //abort the accepting thread
 
-            foreach(var client in clients) //for each clienthandler (= client) disconnect the client from the server
+            foreach (var client in clients) //for each clienthandler (= client) disconnect the client from the server
             {
                 client.Close(); //disconnect one client via: clienthandler.close
             }
             clients.Clear(); //empty list of clienthandler
-        }
-
-        public void Close()
-        {
-            foreach (var client in clients) //disconnect all clients
-            {
-                client.Send("@quit");
-            }    
-            serverSocket.Close(); //close serversocket
-            StopAccepting();
         }
 
         public void BroadcastToggle(string button, string state)

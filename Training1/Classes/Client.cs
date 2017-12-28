@@ -13,42 +13,57 @@ namespace Training1.Classes
     {
         private Socket clientSocket;
         private byte[] buffer = new byte[512];
-        private Thread clientReceivingThread;
         private Action<string> GuiUpdater;
+        private Action AbortInfo;
+        private Thread receivingThread;
 
-        public Client(string ip, int port, Action<string> guiUpdater)
+        public Client(string ip, int port, Action<string> guiUpdater, Action abortInfo)
         {
-            this.GuiUpdater = guiUpdater;
-            TcpClient client = new TcpClient();
-            client.Connect(IPAddress.Parse(ip), port);
-            clientSocket = client.Client;
-            StartReceiving();
+            try
+            {
+                this.GuiUpdater = guiUpdater;
+                this.AbortInfo = abortInfo;
+                TcpClient client = new TcpClient();
+                client.Connect(IPAddress.Parse(ip), port);
+                clientSocket = client.Client;
+                StartReceiving();
+            }catch (Exception)
+            {
+                //server not ready
+            }
         }
 
         private void StartReceiving()
         {
-            Task.Factory.StartNew(Receive);
-            /*
-            clientReceivingThread = new Thread(new ThreadStart(Receive));
-            clientReceivingThread.IsBackground = true;
-            clientReceivingThread.Start();
-            */
+            //Task.Factory.StartNew(Receive);
+            receivingThread = new Thread(new ThreadStart(Receive));
+            receivingThread.IsBackground = true;
+            receivingThread.Start();
         }
 
         private void Receive()
         {
             string update = "";
-            while (!update.Equals("@quit"))
+            while (receivingThread.IsAlive)
             {
-                update = Encoding.UTF8.GetString(buffer, 0 , clientSocket.Receive(buffer));
-                GuiUpdater(update);
-            }
-            Close();
+                if (!update.Equals("@quit"))
+                {
+                    int length = clientSocket.Receive(buffer);
+                    update = Encoding.UTF8.GetString(buffer, 0, length);
+                    GuiUpdater(update);
+                }
+                else
+                {
+                    Close();
+                    AbortInfo();
+                }
+            }          
         }
 
         public void Close()
         {
             clientSocket.Close();
+            receivingThread.Abort();
         }
     }
 }

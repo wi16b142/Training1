@@ -11,6 +11,7 @@ namespace Training1.Classes
     internal class ClientHandler //internal class of server. each clienthandler handles one client
     {
         private Socket clientSocket;
+        private const string endMsg = "@quit";
 
         public Socket ClientSocket //clientsocket stores the socket of the client from serversocket.accept
         {
@@ -25,7 +26,8 @@ namespace Training1.Classes
 
         public void Close()
         {
-            ClientSocket.Close(); //close clientsocket if needed (when server closes the connection)
+            Send(endMsg);
+            ClientSocket.Close(1); //close clientsocket if needed (when server closes the connection)
         }
 
         public void Send(string update)
